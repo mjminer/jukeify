@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 public final class SpotifyAuth {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
-    private static final String SCOPES = "user-read-playback-state user-read-currently-playing user-modify-playback-state";
+    private static final String SCOPES = "streaming user-read-email user-read-private user-read-playback-state user-read-currently-playing user-modify-playback-state";
 
     private static volatile Status status = Status.IDLE;
     private static volatile String statusMessage = "Not connected";
