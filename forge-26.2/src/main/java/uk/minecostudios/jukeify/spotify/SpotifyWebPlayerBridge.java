@@ -69,7 +69,7 @@ public final class SpotifyWebPlayerBridge {
     public static void startForJukebox(BlockPos pos) {
         setActiveJukebox(pos);
         ensureServerStarted();
-        if (!pageOpened || !isReady()) {
+        if (!pageOpened) {
             pageOpened = true;
             statusMessage = "Opening Jukeify Spotify player...";
             Util.getPlatform().openUri(URI.create("http://127.0.0.1:" + PORT + "/player"));
