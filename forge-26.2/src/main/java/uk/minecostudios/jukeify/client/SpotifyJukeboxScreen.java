@@ -4,7 +4,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;\nimport uk.minecostudios.jukeify.spotify.SpotifyAuth;
+import net.minecraft.network.chat.Component;
+import uk.minecostudios.jukeify.spotify.SpotifyAuth;
 
 public final class SpotifyJukeboxScreen extends Screen {
     private final BlockPos jukeboxPos;
