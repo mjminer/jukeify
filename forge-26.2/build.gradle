@@ -21,7 +21,7 @@ minecraft {
 
     runs {
         client {
-            workingDirectory project.file('run')
+            workingDir = layout.projectDirectory.dir('run')
             mods {
                 jukeify {
                     source sourceSets.main
