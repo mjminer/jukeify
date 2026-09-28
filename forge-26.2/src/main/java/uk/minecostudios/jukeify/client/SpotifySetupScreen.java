@@ -89,7 +89,7 @@ public final class SpotifySetupScreen extends Screen {
             g.centeredText(font, Component.literal(saveMessage), cx, cy + 102, 0xFFAAAAAA);
         }
 
-        g.centeredText(font, Component.literal("Redirect URI to register: http://127.0.0.1/callback"), cx, cy + 120, 0xFFAAAAAA);
+        g.centeredText(font, Component.literal("Redirect URI to register: http://127.0.0.1:43821/callback"), cx, cy + 120, 0xFFAAAAAA);
         g.centeredText(font, Component.literal("Never enter your Spotify password or Client Secret into Jukeify."), cx, cy + 136, 0xFF8FCA9A);
     }
 
