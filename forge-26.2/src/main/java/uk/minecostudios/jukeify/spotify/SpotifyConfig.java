@@ -12,6 +12,6 @@ public final class SpotifyConfig {
     public static boolean isConfigured() {
         return OFFICIAL_CLIENT_ID != null
                 && !OFFICIAL_CLIENT_ID.isBlank()
-                && !OFFICIAL_CLIENT_ID.equals("PASTE_SPOTIFY_CLIENT_ID_HERE");
+                && !OFFICIAL_CLIENT_ID.startsWith("PASTE_");
     }
 }
