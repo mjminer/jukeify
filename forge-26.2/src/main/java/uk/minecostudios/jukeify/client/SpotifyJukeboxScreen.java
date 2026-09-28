@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import uk.minecostudios.jukeify.spotify.SpotifyAuth;
 import uk.minecostudios.jukeify.spotify.SpotifyConfig;
 import uk.minecostudios.jukeify.spotify.SpotifyPlayback;
+import uk.minecostudios.jukeify.spotify.SpotifyWebPlayerBridge;
 
 public final class SpotifyJukeboxScreen extends Screen {
     private final BlockPos jukeboxPos;
@@ -22,6 +23,10 @@ public final class SpotifyJukeboxScreen extends Screen {
     protected void init() {
         openedAt = System.currentTimeMillis();
         SpotifyAuth.restoreSessionAsync();
+        SpotifyWebPlayerBridge.setActiveJukebox(jukeboxPos);
+        if (SpotifyAuth.isConnected()) {
+            SpotifyWebPlayerBridge.startForJukebox(jukeboxPos);
+        }
         SpotifyPlayback.refresh();
 
         int cx = width / 2;
@@ -37,13 +42,21 @@ public final class SpotifyJukeboxScreen extends Screen {
                 .bounds(cx + 174, cy + 6, 40, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Vol -"), b -> {
-            int volume = SpotifyPlayback.getState().volume();
-            SpotifyPlayback.setVolume(volume < 0 ? 40 : volume - 10);
+            if (SpotifyWebPlayerBridge.isReady()) {
+                SpotifyWebPlayerBridge.adjustBaseVolume(-0.10);
+            } else {
+                int volume = SpotifyPlayback.getState().volume();
+                SpotifyPlayback.setVolume(volume < 0 ? 40 : volume - 10);
+            }
         }).bounds(cx + 34, cy + 32, 64, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Vol +"), b -> {
-            int volume = SpotifyPlayback.getState().volume();
-            SpotifyPlayback.setVolume(volume < 0 ? 60 : volume + 10);
+            if (SpotifyWebPlayerBridge.isReady()) {
+                SpotifyWebPlayerBridge.adjustBaseVolume(0.10);
+            } else {
+                int volume = SpotifyPlayback.getState().volume();
+                SpotifyPlayback.setVolume(volume < 0 ? 60 : volume + 10);
+            }
         }).bounds(cx + 102, cy + 32, 64, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Spotify Settings"), b -> {
@@ -57,6 +70,9 @@ public final class SpotifyJukeboxScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+        if (SpotifyAuth.isConnected()) {
+            SpotifyWebPlayerBridge.startForJukebox(jukeboxPos);
+        }
         SpotifyPlayback.refreshIfNeeded();
     }
 
@@ -111,10 +127,21 @@ public final class SpotifyJukeboxScreen extends Screen {
                 g.text(font, trim(track.album(), 35), cx + 34, cy - 17, 0xFF888888, false);
             }
 
-            String device = track.deviceName().isBlank() ? "Spotify device" : track.deviceName();
-            String volume = track.volume() < 0 ? "" : "  Vol " + track.volume() + "%";
+            String device = SpotifyWebPlayerBridge.isReady()
+                    ? "Jukeify Jukebox"
+                    : (track.deviceName().isBlank() ? "Spotify device" : track.deviceName());
+            String volume = SpotifyWebPlayerBridge.isReady()
+                    ? "  Vol " + SpotifyWebPlayerBridge.getEffectiveVolumePercent() + "%"
+                    : (track.volume() < 0 ? "" : "  Vol " + track.volume() + "%");
             g.text(font, (track.playing() ? "Playing - " : "Paused - ") + trim(device, 22) + volume,
                     cx + 34, cy - 2, track.playing() ? 0xFF1DB954 : 0xFFE7C27D, false);
+
+            if (SpotifyWebPlayerBridge.isReady()) {
+                int dist = (int)Math.round(SpotifyWebPlayerBridge.getDistance());
+                g.text(font, "Jukebox audio range: " + dist + "m / 32m", cx + 34, cy + 60, 0xFFAAAAAA, false);
+            } else if (SpotifyAuth.isConnected()) {
+                g.text(font, trim(SpotifyWebPlayerBridge.getStatusMessage(), 42), cx + 34, cy + 60, 0xFFE7C27D, false);
+            }
         } else {
             String message;
             if (SpotifyConfig.loadClientId().isBlank()) {
