@@ -13,6 +13,7 @@ import uk.minecostudios.jukeify.spotify.SpotifyWebPlayerBridge;
 public final class SpotifyJukeboxScreen extends Screen {
     private final BlockPos jukeboxPos;
     private long openedAt;
+    private boolean playerLaunchRequested;
 
     public SpotifyJukeboxScreen(BlockPos jukeboxPos) {
         super(Component.literal("Jukeify"));
@@ -26,6 +27,7 @@ public final class SpotifyJukeboxScreen extends Screen {
         SpotifyWebPlayerBridge.setActiveJukebox(jukeboxPos);
         if (SpotifyAuth.isConnected()) {
             SpotifyWebPlayerBridge.startForJukebox(jukeboxPos);
+            playerLaunchRequested = true;
         }
         SpotifyPlayback.refresh();
 
@@ -70,8 +72,9 @@ public final class SpotifyJukeboxScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        if (SpotifyAuth.isConnected()) {
+        if (SpotifyAuth.isConnected() && !playerLaunchRequested) {
             SpotifyWebPlayerBridge.startForJukebox(jukeboxPos);
+            playerLaunchRequested = true;
         }
         SpotifyPlayback.refreshIfNeeded();
     }
