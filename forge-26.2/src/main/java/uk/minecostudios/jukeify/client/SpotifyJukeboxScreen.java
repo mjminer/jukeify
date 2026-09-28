@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Component;\nimport uk.minecostudios.jukeify.spotify.SpotifyAuth;
 
 public final class SpotifyJukeboxScreen extends Screen {
     private final BlockPos jukeboxPos;
@@ -21,7 +21,7 @@ public final class SpotifyJukeboxScreen extends Screen {
         int cx = width / 2;
         int cy = height / 2;
 
-        addRenderableWidget(Button.builder(Component.literal("Connect Spotify"), b -> {
+        addRenderableWidget(Button.builder(Component.literal(SpotifyAuth.isConnected() ? "Spotify Settings" : "Connect Spotify"), b -> {
             if (minecraft != null) minecraft.gui.setScreen(new SpotifySetupScreen(this));
         }).bounds(cx + 34, cy + 16, 136, 20).build());
 
@@ -71,7 +71,7 @@ public final class SpotifyJukeboxScreen extends Screen {
 
         g.text(font, "JUKEIFY", cx + 34, cy - 78, 0xFFE7C27D, false);
         g.text(font, "NOW PLAYING", cx + 34, cy - 60, 0xFF1DB954, false);
-        g.text(font, "Not connected to Spotify", cx + 34, cy - 43, 0xFFFFFFFF, false);
+        g.text(font, SpotifyAuth.isConnected() ? "Spotify connected" : SpotifyAuth.getStatusMessage(), cx + 34, cy - 43, SpotifyAuth.isConnected() ? 0xFF1DB954 : 0xFFFFFFFF, false);
         g.text(font, "Album art will spin on the record", cx + 34, cy - 27, 0xFFAAAAAA, false);
         g.text(font, "Jukebox: " + jukeboxPos.toShortString(), cx + 34, cy - 9, 0xFF777777, false);
         g.text(font, "Shift + Right Click = vanilla jukebox", cx - 170, cy + 72, 0xFFB9A58A, false);
