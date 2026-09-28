@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import uk.minecostudios.jukeify.spotify.SpotifyAuth;
 import uk.minecostudios.jukeify.spotify.SpotifyConfig;
 
-import java.awt.Desktop;
+import net.minecraft.util.Util;
 import java.net.URI;
 
 public final class SpotifySetupScreen extends Screen {
@@ -62,12 +62,8 @@ public final class SpotifySetupScreen extends Screen {
 
     private void openDashboard() {
         try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(URI.create(DASHBOARD_URL));
-                saveMessage = "Spotify Developer Dashboard opened";
-            } else {
-                saveMessage = "Could not open browser";
-            }
+            Util.getPlatform().openUri(URI.create(DASHBOARD_URL));
+            saveMessage = "Spotify Developer Dashboard opened";
         } catch (Exception e) {
             saveMessage = "Could not open browser";
         }
