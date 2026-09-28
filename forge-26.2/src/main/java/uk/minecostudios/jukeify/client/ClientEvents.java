@@ -1,7 +1,7 @@
 package uk.minecostudios.jukeify.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.JukeboxBlock;
@@ -25,9 +25,8 @@ public final class ClientEvents {
 
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.player.isShiftKeyDown()) return;
-        if (event.getItemStack().is(ItemTags.MUSIC_DISCS)) return;
+        if (event.getItemStack().has(DataComponents.JUKEBOX_PLAYABLE)) return;
 
-        event.setCanceled(true);
         event.setCancellationResult(InteractionResult.SUCCESS);
 
         var pos = event.getPos().immutable();
