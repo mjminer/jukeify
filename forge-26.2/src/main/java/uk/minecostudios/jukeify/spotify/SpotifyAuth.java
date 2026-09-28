@@ -2,7 +2,7 @@ package uk.minecostudios.jukeify.spotify;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.Util;
+import java.awt.Desktop;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -116,7 +116,7 @@ public final class SpotifyAuth {
 
                 status = Status.WAITING_FOR_BROWSER;
                 statusMessage = "Browser opened - approve Jukeify in Spotify";
-                Util.getPlatform().openUri(authorizeUri);
+                if (!Desktop.isDesktopSupported()) {\n                    fail("Could not open your browser automatically.");\n                    return;\n                }\n                Desktop.getDesktop().browse(authorizeUri);
 
                 Callback callback = waitForCallback(server);
                 if (callback.error != null) {
