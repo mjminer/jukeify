@@ -266,7 +266,7 @@ document.getElementById('activate').onclick = async () => {
     }
 
     private static String json(String value) {
-        return value.replace("\\", "\\\\").replace(""", "\\"");
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private static double clamp(double value) {
