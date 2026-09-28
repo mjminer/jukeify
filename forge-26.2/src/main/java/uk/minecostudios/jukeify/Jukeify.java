@@ -3,6 +3,7 @@ package uk.minecostudios.jukeify;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import uk.minecostudios.jukeify.client.ClientEvents;
+import uk.minecostudios.jukeify.spotify.SpotifyAuth;
 
 @Mod(Jukeify.MOD_ID)
 public final class Jukeify {
@@ -10,5 +11,6 @@ public final class Jukeify {
 
     public Jukeify(FMLJavaModLoadingContext context) {
         ClientEvents.register();
+        SpotifyAuth.restoreSessionAsync();
     }
 }
