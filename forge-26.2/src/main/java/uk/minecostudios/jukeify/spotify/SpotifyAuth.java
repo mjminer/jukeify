@@ -116,7 +116,11 @@ public final class SpotifyAuth {
 
                 status = Status.WAITING_FOR_BROWSER;
                 statusMessage = "Browser opened - approve Jukeify in Spotify";
-                if (!Desktop.isDesktopSupported()) {\n                    fail("Could not open your browser automatically.");\n                    return;\n                }\n                Desktop.getDesktop().browse(authorizeUri);
+                if (!Desktop.isDesktopSupported()) {
+                    fail("Could not open your browser automatically.");
+                    return;
+                }
+                Desktop.getDesktop().browse(authorizeUri);
 
                 Callback callback = waitForCallback(server);
                 if (callback.error != null) {
