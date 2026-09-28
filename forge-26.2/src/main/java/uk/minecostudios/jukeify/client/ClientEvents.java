@@ -9,6 +9,8 @@ import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.util.Result;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.TickEvent;
+import uk.minecostudios.jukeify.spotify.SpotifyWebPlayerBridge;
 
 public final class ClientEvents {
     private ClientEvents() {}
@@ -16,6 +18,11 @@ public final class ClientEvents {
     public static void register() {
         PlayerInteractEvent.RightClickBlock.BUS.addListener(
                 (Predicate<PlayerInteractEvent.RightClickBlock>) ClientEvents::onRightClickBlock);
+        TickEvent.ClientTickEvent.BUS.addListener(event -> {
+            if (event.phase == TickEvent.Phase.END) {
+                SpotifyWebPlayerBridge.onClientTick();
+            }
+        });
     }
 
     private static boolean onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
