@@ -120,6 +120,12 @@ public final class SpotifyPlayback {
         sendCommand("PUT", "/v1/me/player/volume?volume_percent=" + clamped, null);
     }
 
+    public static void transferToDevice(String deviceId, boolean play) {
+        if (deviceId == null || deviceId.isBlank()) return;
+        String body = "{\"device_ids\":[\"" + escapeJson(deviceId) + "\"],\"play\":" + play + "}";
+        sendCommand("PUT", "/v1/me/player", body);
+    }
+
     private static void sendCommand(String method, String path, String body) {
         CompletableFuture.runAsync(() -> {
             try {
@@ -142,6 +148,10 @@ public final class SpotifyPlayback {
             } catch (Exception ignored) {
             }
         });
+    }
+
+    private static String escapeJson(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private static HttpRequest.Builder authorizedRequest(String url, String token) {
