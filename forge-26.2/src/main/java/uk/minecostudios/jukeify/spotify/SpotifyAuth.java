@@ -81,12 +81,12 @@ public final class SpotifyAuth {
         if (status == Status.WAITING_FOR_BROWSER || status == Status.EXCHANGING_CODE) return;
 
         CompletableFuture.runAsync(() -> {
-            try (ServerSocket server = new ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            try (ServerSocket server = new ServerSocket(43821, 1, InetAddress.getByName("127.0.0.1"))) {
                 server.setSoTimeout(180_000);
                 String verifier = randomBase64Url(64);
                 String challenge = base64Url(sha256(verifier.getBytes(StandardCharsets.US_ASCII)));
                 String state = randomBase64Url(24);
-                String redirectUri = "http://127.0.0.1:" + server.getLocalPort() + "/callback";
+                String redirectUri = "http://127.0.0.1:43821/callback";
 
                 URI authorizeUri = URI.create("https://accounts.spotify.com/authorize"
                         + "?client_id=" + enc(clientId.trim())
