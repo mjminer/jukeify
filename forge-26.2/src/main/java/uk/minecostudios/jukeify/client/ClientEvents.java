@@ -18,11 +18,7 @@ public final class ClientEvents {
     public static void register() {
         PlayerInteractEvent.RightClickBlock.BUS.addListener(
                 (Predicate<PlayerInteractEvent.RightClickBlock>) ClientEvents::onRightClickBlock);
-        TickEvent.ClientTickEvent.BUS.addListener(event -> {
-            if (event.phase == TickEvent.Phase.END) {
-                SpotifyWebPlayerBridge.onClientTick();
-            }
-        });
+        TickEvent.ClientTickEvent.Post.BUS.addListener(event -> SpotifyWebPlayerBridge.onClientTick());
     }
 
     private static boolean onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
