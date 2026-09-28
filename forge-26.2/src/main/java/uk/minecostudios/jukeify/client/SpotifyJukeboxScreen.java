@@ -6,6 +6,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import uk.minecostudios.jukeify.spotify.SpotifyAuth;
+import uk.minecostudios.jukeify.spotify.SpotifyConfig;
+import uk.minecostudios.jukeify.spotify.SpotifyPlayback;
 
 public final class SpotifyJukeboxScreen extends Screen {
     private final BlockPos jukeboxPos;
@@ -19,24 +21,52 @@ public final class SpotifyJukeboxScreen extends Screen {
     @Override
     protected void init() {
         openedAt = System.currentTimeMillis();
+        SpotifyAuth.restoreSessionAsync();
+        SpotifyPlayback.refresh();
+
         int cx = width / 2;
         int cy = height / 2;
 
-        addRenderableWidget(Button.builder(Component.literal(SpotifyAuth.isConnected() ? "Spotify Settings" : "Connect Spotify"), b -> {
+        addRenderableWidget(Button.builder(Component.literal("<<"), b -> SpotifyPlayback.previous())
+                .bounds(cx + 34, cy + 6, 40, 20).build());
+
+        addRenderableWidget(Button.builder(Component.literal("Play / Pause"), b -> SpotifyPlayback.togglePlayPause())
+                .bounds(cx + 78, cy + 6, 92, 20).build());
+
+        addRenderableWidget(Button.builder(Component.literal(">>"), b -> SpotifyPlayback.next())
+                .bounds(cx + 174, cy + 6, 40, 20).build());
+
+        addRenderableWidget(Button.builder(Component.literal("Vol -"), b -> {
+            int volume = SpotifyPlayback.getState().volume();
+            SpotifyPlayback.setVolume(volume < 0 ? 40 : volume - 10);
+        }).bounds(cx + 34, cy + 32, 64, 20).build());
+
+        addRenderableWidget(Button.builder(Component.literal("Vol +"), b -> {
+            int volume = SpotifyPlayback.getState().volume();
+            SpotifyPlayback.setVolume(volume < 0 ? 60 : volume + 10);
+        }).bounds(cx + 102, cy + 32, 64, 20).build());
+
+        addRenderableWidget(Button.builder(Component.literal("Spotify Settings"), b -> {
             if (minecraft != null) minecraft.gui.setScreen(new SpotifySetupScreen(this));
-        }).bounds(cx + 34, cy + 16, 136, 20).build());
+        }).bounds(cx + 170, cy + 32, 100, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
-                .bounds(cx + 34, cy + 42, 136, 20).build());
+                .bounds(cx + 170, cy + 58, 100, 20).build());
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        SpotifyPlayback.refreshIfNeeded();
     }
 
     @Override
     public void extractBackground(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         int cx = width / 2;
         int cy = height / 2;
-        g.fill(cx - 194, cy - 109, cx + 194, cy + 99, 0xD0180E08);
-        g.fill(cx - 188, cy - 103, cx + 188, cy + 93, 0xFF68401F);
-        g.fill(cx - 181, cy - 96, cx + 181, cy + 86, 0xFF2A170D);
+        g.fill(cx - 194, cy - 109, cx + 286, cy + 99, 0xD0180E08);
+        g.fill(cx - 188, cy - 103, cx + 280, cy + 93, 0xFF68401F);
+        g.fill(cx - 181, cy - 96, cx + 273, cy + 86, 0xFF2A170D);
     }
 
     private void drawVinyl(GuiGraphicsExtractor g, int cx, int cy) {
@@ -67,15 +97,43 @@ public final class SpotifyJukeboxScreen extends Screen {
 
         int cx = width / 2;
         int cy = height / 2;
+        SpotifyPlayback.TrackState track = SpotifyPlayback.getState();
 
         drawVinyl(g, cx - 88, cy - 6);
 
-        g.text(font, "JUKEIFY", cx + 34, cy - 78, 0xFFE7C27D, false);
-        g.text(font, "NOW PLAYING", cx + 34, cy - 60, 0xFF1DB954, false);
-        g.text(font, SpotifyAuth.isConnected() ? "Spotify connected" : SpotifyAuth.getStatusMessage(), cx + 34, cy - 43, SpotifyAuth.isConnected() ? 0xFF1DB954 : 0xFFFFFFFF, false);
-        g.text(font, "Album art will spin on the record", cx + 34, cy - 27, 0xFFAAAAAA, false);
-        g.text(font, "Jukebox: " + jukeboxPos.toShortString(), cx + 34, cy - 9, 0xFF777777, false);
-        g.text(font, "Shift + Right Click = vanilla jukebox", cx - 170, cy + 72, 0xFFB9A58A, false);
+        g.text(font, "JUKEIFY", cx + 34, cy - 82, 0xFFE7C27D, false);
+        g.text(font, "NOW PLAYING", cx + 34, cy - 64, 0xFF1DB954, false);
+
+        if (track.hasTrack()) {
+            g.text(font, trim(track.title(), 35), cx + 34, cy - 47, 0xFFFFFFFF, false);
+            g.text(font, trim(track.artist(), 35), cx + 34, cy - 32, 0xFFBBBBBB, false);
+            if (!track.album().isBlank()) {
+                g.text(font, trim(track.album(), 35), cx + 34, cy - 17, 0xFF888888, false);
+            }
+
+            String device = track.deviceName().isBlank() ? "Spotify device" : track.deviceName();
+            String volume = track.volume() < 0 ? "" : "  Vol " + track.volume() + "%";
+            g.text(font, (track.playing() ? "Playing - " : "Paused - ") + trim(device, 22) + volume,
+                    cx + 34, cy - 2, track.playing() ? 0xFF1DB954 : 0xFFE7C27D, false);
+        } else {
+            String message;
+            if (SpotifyConfig.loadClientId().isBlank()) {
+                message = "First-time Spotify setup required";
+            } else if (!SpotifyAuth.isConnected()) {
+                message = SpotifyAuth.getStatusMessage();
+            } else {
+                message = track.message();
+            }
+            g.text(font, trim(message, 42), cx + 34, cy - 43, 0xFFFFFFFF, false);
+        }
+
+        g.text(font, "Jukebox: " + jukeboxPos.toShortString(), cx - 170, cy + 72, 0xFF777777, false);
+        g.text(font, "Shift + Right Click = vanilla jukebox", cx - 170, cy + 84, 0xFFB9A58A, false);
+    }
+
+    private static String trim(String value, int max) {
+        if (value == null) return "";
+        return value.length() <= max ? value : value.substring(0, Math.max(0, max - 3)) + "...";
     }
 
     @Override
