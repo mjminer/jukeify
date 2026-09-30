@@ -4,6 +4,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Blocks;
+import javazoom.jl.decoder.Bitstream;
+import javazoom.jl.decoder.Decoder;
+import javazoom.jl.decoder.Header;
+import javazoom.jl.decoder.SampleBuffer;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.stb.STBVorbis;
 import org.lwjgl.stb.STBVorbisInfo;
@@ -12,6 +16,7 @@ import org.lwjgl.system.MemoryUtil;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -179,9 +184,54 @@ public final class NativeJukeboxAudio {
 
     private static DecodedAudio decode(Path file) throws Exception {
         String lower = file.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
+        if (lower.endsWith(".mp3")) return decodeMp3(file);
         if (lower.endsWith(".ogg")) return decodeOgg(file);
         if (lower.endsWith(".wav")) return decodeWav(file);
-        throw new IllegalArgumentException("Supported formats: .ogg and .wav");
+        throw new IllegalArgumentException("Supported formats: .mp3, .ogg and .wav");
+    }
+
+    private static DecodedAudio decodeMp3(Path file) throws Exception {
+        try (BufferedInputStream input = new BufferedInputStream(Files.newInputStream(file))) {
+            Bitstream bitstream = new Bitstream(input);
+            Decoder decoder = new Decoder();
+            ByteArrayOutputStream monoBytes = new ByteArrayOutputStream();
+
+            int sampleRate = 44100;
+            Header header;
+            while ((header = bitstream.readFrame()) != null) {
+                try {
+                    SampleBuffer samples = (SampleBuffer)decoder.decodeFrame(header, bitstream);
+                    sampleRate = samples.getSampleFrequency();
+                    int channels = Math.max(1, samples.getChannelCount());
+                    short[] data = samples.getBuffer();
+                    int length = samples.getBufferLength();
+
+                    for (int i = 0; i < length; i += channels) {
+                        int sum = 0;
+                        int used = 0;
+                        for (int ch = 0; ch < channels && i + ch < length; ch++) {
+                            sum += data[i + ch];
+                            used++;
+                        }
+                        short mono = (short)(sum / Math.max(1, used));
+                        monoBytes.write(mono & 0xff);
+                        monoBytes.write((mono >>> 8) & 0xff);
+                    }
+                } finally {
+                    bitstream.closeFrame();
+                }
+            }
+            bitstream.close();
+
+            byte[] pcmBytes = monoBytes.toByteArray();
+            ShortBuffer mono = MemoryUtil.memAllocShort(Math.max(1, pcmBytes.length / 2));
+            for (int i = 0; i + 1 < pcmBytes.length; i += 2) {
+                int sample = (pcmBytes[i] & 0xff) | (pcmBytes[i + 1] << 8);
+                mono.put((short)sample);
+            }
+            mono.flip();
+            return new DecodedAudio(mono, sampleRate, true);
+        }
     }
 
     private static DecodedAudio decodeOgg(Path file) throws Exception {
