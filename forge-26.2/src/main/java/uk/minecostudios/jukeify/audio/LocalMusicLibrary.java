@@ -45,6 +45,6 @@ public final class LocalMusicLibrary {
 
     private static boolean supported(Path path) {
         String n = path.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
-        return n.endsWith(".ogg") || n.endsWith(".wav");
+        return n.endsWith(".mp3") || n.endsWith(".ogg") || n.endsWith(".wav");
     }
 }
