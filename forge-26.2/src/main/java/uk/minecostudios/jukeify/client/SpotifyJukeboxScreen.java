@@ -13,7 +13,6 @@ import uk.minecostudios.jukeify.spotify.SpotifyWebPlayerBridge;
 public final class SpotifyJukeboxScreen extends Screen {
     private final BlockPos jukeboxPos;
     private long openedAt;
-    private boolean playerLaunchRequested;
 
     public SpotifyJukeboxScreen(BlockPos jukeboxPos) {
         super(Component.literal("Jukeify"));
@@ -25,10 +24,6 @@ public final class SpotifyJukeboxScreen extends Screen {
         openedAt = System.currentTimeMillis();
         SpotifyAuth.restoreSessionAsync();
         SpotifyWebPlayerBridge.setActiveJukebox(jukeboxPos);
-        if (SpotifyAuth.isConnected()) {
-            SpotifyWebPlayerBridge.startForJukebox(jukeboxPos);
-            playerLaunchRequested = true;
-        }
         SpotifyPlayback.refresh();
 
         int cx = width / 2;
@@ -61,21 +56,25 @@ public final class SpotifyJukeboxScreen extends Screen {
             }
         }).bounds(cx + 102, cy + 32, 64, 20).build());
 
-        addRenderableWidget(Button.builder(Component.literal("Spotify Settings"), b -> {
-            if (minecraft != null) minecraft.gui.setScreen(new SpotifySetupScreen(this));
+        addRenderableWidget(Button.builder(Component.literal("Local Jukebox"), b -> {
+            if (minecraft != null) minecraft.gui.setScreen(new LocalJukeboxScreen(this, jukeboxPos));
         }).bounds(cx + 170, cy + 32, 100, 20).build());
 
+        addRenderableWidget(Button.builder(Component.literal("Spotify Player"), b -> {
+            if (SpotifyAuth.isConnected()) SpotifyWebPlayerBridge.startForJukebox(jukeboxPos);
+        }).bounds(cx + 34, cy + 58, 112, 20).build());
+
+        addRenderableWidget(Button.builder(Component.literal("Spotify Settings"), b -> {
+            if (minecraft != null) minecraft.gui.setScreen(new SpotifySetupScreen(this));
+        }).bounds(cx + 150, cy + 58, 100, 20).build());
+
         addRenderableWidget(Button.builder(Component.literal("Close"), b -> onClose())
-                .bounds(cx + 170, cy + 58, 100, 20).build());
+                .bounds(cx + 254, cy + 58, 70, 20).build());
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (SpotifyAuth.isConnected() && !playerLaunchRequested) {
-            SpotifyWebPlayerBridge.startForJukebox(jukeboxPos);
-            playerLaunchRequested = true;
-        }
         SpotifyPlayback.refreshIfNeeded();
     }
 
@@ -158,7 +157,8 @@ public final class SpotifyJukeboxScreen extends Screen {
         }
 
         g.text(font, "Jukebox: " + jukeboxPos.toShortString(), cx - 170, cy + 72, 0xFF777777, false);
-        g.text(font, "Shift + Right Click = vanilla jukebox", cx - 170, cy + 84, 0xFFB9A58A, false);
+        g.text(font, "Local Jukebox = real positional sound from this block", cx - 170, cy + 84, 0xFFB9A58A, false);
+        g.text(font, "Spotify Player = Spotify Connect browser player", cx + 34, cy + 84, 0xFF777777, false);
     }
 
     private static String trim(String value, int max) {
