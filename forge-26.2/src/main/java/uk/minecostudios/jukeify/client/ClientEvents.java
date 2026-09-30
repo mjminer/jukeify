@@ -11,6 +11,7 @@ import net.minecraftforge.common.util.Result;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.TickEvent;
 import uk.minecostudios.jukeify.spotify.SpotifyWebPlayerBridge;
+import uk.minecostudios.jukeify.audio.NativeJukeboxAudio;
 
 public final class ClientEvents {
     private ClientEvents() {}
@@ -18,7 +19,10 @@ public final class ClientEvents {
     public static void register() {
         PlayerInteractEvent.RightClickBlock.BUS.addListener(
                 (Predicate<PlayerInteractEvent.RightClickBlock>) ClientEvents::onRightClickBlock);
-        TickEvent.ClientTickEvent.Post.BUS.addListener(event -> SpotifyWebPlayerBridge.onClientTick());
+        TickEvent.ClientTickEvent.Post.BUS.addListener(event -> {
+            SpotifyWebPlayerBridge.onClientTick();
+            NativeJukeboxAudio.tick();
+        });
     }
 
     private static boolean onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
