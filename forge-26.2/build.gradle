@@ -38,8 +38,22 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    mp3Lib
+}
+
 dependencies {
     implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    implementation "javazoom:jlayer:1.0.1"
+    mp3Lib "javazoom:jlayer:1.0.1"
+}
+
+jar {
+    from {
+        configurations.mp3Lib.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    exclude "META-INF/*.SF", "META-INF/*.RSA", "META-INF/*.DSA"
 }
 
 processResources {
