@@ -20,7 +20,7 @@ public final class LocalJukeboxScreen extends Screen {
     private List<Path> tracks = List.of();
 
     public LocalJukeboxScreen(Screen parent, BlockPos jukeboxPos) {
-        super(Component.literal("Local Jukebox"));
+        super(Component.literal("Jukeify MP3 Player"));
         this.parent = parent;
         this.jukeboxPos = jukeboxPos;
     }
@@ -79,7 +79,7 @@ public final class LocalJukeboxScreen extends Screen {
                 NativeJukeboxAudio.setVolumePercent(NativeJukeboxAudio.getVolumePercent() + 10))
                 .bounds(cx + 84, top + 220, 64, 20).build());
 
-        addRenderableWidget(Button.builder(Component.literal("Back"), b -> {
+        addRenderableWidget(Button.builder(Component.literal(parent == null ? "Close" : "Back"), b -> {
             if (minecraft != null) minecraft.gui.setScreen(parent);
         }).bounds(cx + 152, top + 220, 60, 20).build());
     }
@@ -99,10 +99,10 @@ public final class LocalJukeboxScreen extends Screen {
         int cx = width / 2;
         int top = height / 2 - 105;
 
-        g.text(font, "LOCAL JUKEBOX - TRUE 3D AUDIO", cx - 160, top + 4, 0xFFE7C27D, false);
+        g.text(font, "JUKEIFY - JUKEBOX MP3 PLAYER", cx - 160, top + 4, 0xFFE7C27D, false);
         if (tracks.isEmpty()) {
-            g.text(font, "No .ogg or .wav files found.", cx - 160, top + 36, 0xFFFFFFFF, false);
-            g.text(font, "Use Open Music Folder, add tracks, then press Refresh.", cx - 160, top + 52, 0xFFAAAAAA, false);
+            g.text(font, "No MP3 / OGG / WAV files found.", cx - 160, top + 36, 0xFFFFFFFF, false);
+            g.text(font, "Open the music folder, add MP3s, then press Refresh.", cx - 160, top + 52, 0xFFAAAAAA, false);
         }
 
         String playing = NativeJukeboxAudio.getTrackName();
@@ -112,9 +112,9 @@ public final class LocalJukeboxScreen extends Screen {
             g.text(font, NativeJukeboxAudio.getStatus(), cx - 160, top + 178, 0xFFAAAAAA, false);
         }
 
-        g.text(font, "Uses Minecraft/OpenAL positional audio at the jukebox block.",
+        g.text(font, "Music comes from this jukebox with real 3D positional audio.",
                 cx - 160, top + 246, 0xFFB9A58A, false);
-        g.text(font, "Volume follows Master + Jukebox/Note Blocks sound settings.",
+        g.text(font, "Volume follows Master + Jukebox/Note Blocks settings.",
                 cx - 160, top + 258, 0xFF888888, false);
     }
 
